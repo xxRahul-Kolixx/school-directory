@@ -19,10 +19,48 @@ export default function AddSchoolPage() {
     setServerError("");
 
     try {
+      let imageUrl = "";
+
+      // If user selected a file → upload to Cloudinary
+      if (data.image && data.image[0]) {
+        const file = data.image[0];
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append(
+          "upload_preset",
+          process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
+        );
+
+        const uploadRes = await fetch(
+          `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
+          {
+            method: "POST",
+            body: formData,
+          }
+        );
+
+        const uploadData = await uploadRes.json();
+        if (uploadData.secure_url) {
+          imageUrl = uploadData.secure_url;
+        } else {
+          throw new Error("Image upload failed");
+        }
+      }
+
+      const payload = {
+        name: data.name,
+        address: data.address,
+        city: data.city,
+        state: data.state,
+        contact: data.contact,
+        email_id: data.email_id,
+        image: imageUrl,
+      };
+
       const res = await fetch("/api/schools/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
@@ -44,7 +82,11 @@ export default function AddSchoolPage() {
     <div className="max-w-2xl mx-auto p-6">
       <h1 className="text-2xl font-bold mb-6">Add School</h1>
 
-      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="space-y-4"
+        encType="multipart/form-data"
+      >
         <div>
           <label className="block mb-1">School Name*</label>
           <input
@@ -114,8 +156,13 @@ export default function AddSchoolPage() {
         </div>
 
         <div>
-          <label className="block mb-1">Image URL (optional)</label>
-          <input {...register("image")} className="w-full border p-2 rounded" />
+          <label className="block mb-1">School Image</label>
+          <input
+            type="file"
+            accept="image/*"
+            {...register("image")}
+            className="w-full"
+          />
         </div>
 
         <button
