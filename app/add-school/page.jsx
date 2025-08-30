@@ -1,8 +1,9 @@
 "use client";
 
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 export default function AddSchoolPage() {
   const {
@@ -12,7 +13,9 @@ export default function AddSchoolPage() {
   } = useForm();
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
+  const [selectedFile, setSelectedFile] = useState(null);
   const router = useRouter();
+  const fileInputRef = useRef(null);
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -21,7 +24,6 @@ export default function AddSchoolPage() {
     try {
       let imageUrl = "";
 
-      // If user selected a file → upload to Cloudinary
       if (data.image && data.image[0]) {
         const file = data.image[0];
         const formData = new FormData();
@@ -33,10 +35,7 @@ export default function AddSchoolPage() {
 
         const uploadRes = await fetch(
           `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
-          {
-            method: "POST",
-            body: formData,
-          }
+          { method: "POST", body: formData }
         );
 
         const uploadData = await uploadRes.json();
@@ -68,27 +67,37 @@ export default function AddSchoolPage() {
         throw new Error(err.error || "Submission failed");
       }
 
-      // success → redirect to show-schools
       router.push("/show-schools");
     } catch (err) {
-      console.error(err);
       setServerError(err.message || "Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]?.name || null);
+  };
+
+  const clearImage = () => {
+    if (fileInputRef.current) fileInputRef.current.value = "";
+    setSelectedFile(null);
+  };
+
   return (
-    <div className="max-w-2xl mx-auto p-6">
-      <h1 className="text-2xl font-bold mb-6">Add School</h1>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center p-6">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">➕ Add School</h1>
 
       <form
         onSubmit={handleSubmit(onSubmit)}
-        className="space-y-4"
+        className="bg-white p-6 rounded-lg shadow-md w-full max-w-lg space-y-4"
         encType="multipart/form-data"
       >
+        {/* School Name */}
         <div>
-          <label className="block mb-1">School Name*</label>
+          <label className="block mb-1 font-semibold text-gray-800">
+            School Name*
+          </label>
           <input
             {...register("name", { required: "Name required" })}
             className="w-full border p-2 rounded"
@@ -98,8 +107,11 @@ export default function AddSchoolPage() {
           )}
         </div>
 
+        {/* Address */}
         <div>
-          <label className="block mb-1">Address*</label>
+          <label className="block mb-1 font-semibold text-gray-800">
+            Address*
+          </label>
           <textarea
             {...register("address", { required: "Address required" })}
             className="w-full border p-2 rounded"
@@ -109,8 +121,11 @@ export default function AddSchoolPage() {
           )}
         </div>
 
+        {/* City */}
         <div>
-          <label className="block mb-1">City*</label>
+          <label className="block mb-1 font-semibold text-gray-800">
+            City*
+          </label>
           <input
             {...register("city", { required: "City required" })}
             className="w-full border p-2 rounded"
@@ -120,34 +135,32 @@ export default function AddSchoolPage() {
           )}
         </div>
 
+        {/* State */}
         <div>
-          <label className="block mb-1">State</label>
+          <label className="block mb-1 font-semibold text-gray-800">
+            State
+          </label>
           <input {...register("state")} className="w-full border p-2 rounded" />
         </div>
 
+        {/* Contact */}
         <div>
-          <label className="block mb-1">Contact</label>
+          <label className="block mb-1 font-semibold text-gray-800">
+            Contact
+          </label>
           <input
-            {...register("contact", {
-              pattern: {
-                value: /^[0-9+\-\s()]{6,20}$/,
-                message: "Invalid phone",
-              },
-            })}
+            {...register("contact")}
             className="w-full border p-2 rounded"
           />
-          {errors.contact && (
-            <p className="text-red-600 text-sm">{errors.contact.message}</p>
-          )}
         </div>
 
+        {/* Email */}
         <div>
-          <label className="block mb-1">Email*</label>
+          <label className="block mb-1 font-semibold text-gray-800">
+            Email*
+          </label>
           <input
-            {...register("email_id", {
-              required: "Email required",
-              pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
-            })}
+            {...register("email_id", { required: "Email required" })}
             className="w-full border p-2 rounded"
           />
           {errors.email_id && (
@@ -155,26 +168,57 @@ export default function AddSchoolPage() {
           )}
         </div>
 
+        {/* Image Upload */}
         <div>
-          <label className="block mb-1">School Image</label>
-          <input
-            type="file"
-            accept="image/*"
-            {...register("image")}
-            className="w-full"
-          />
+          <label className="block mb-1 font-semibold text-gray-800">
+            School Image
+          </label>
+          <div className="flex items-center gap-3">
+            <input
+              type="file"
+              accept="image/*"
+              {...register("image")}
+              ref={fileInputRef}
+              onChange={handleFileChange}
+              className="hidden"
+              id="imageUpload"
+            />
+            <label
+              htmlFor="imageUpload"
+              className="px-4 py-2 bg-gray-200 text-gray-800 rounded cursor-pointer hover:bg-gray-300"
+            >
+              Upload Image
+            </label>
+            {selectedFile && (
+              <span className="text-gray-700 text-sm">{selectedFile}</span>
+            )}
+            {selectedFile && (
+              <button
+                type="button"
+                onClick={clearImage}
+                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+              >
+                Clear
+              </button>
+            )}
+          </div>
         </div>
 
+        {/* Submit Button */}
         <button
           type="submit"
           disabled={loading}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-400"
+          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition"
         >
           {loading ? "Saving..." : "Save School"}
         </button>
 
         {serverError && <p className="text-red-600 mt-2">{serverError}</p>}
       </form>
+
+      <Link href="/" className="mt-6 text-blue-600 hover:underline">
+        ⬅ Back to Home
+      </Link>
     </div>
   );
 }
