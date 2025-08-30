@@ -1,21 +1,21 @@
 "use client";
 
-import { useForm } from "react-hook-form";
-import { useState, useRef } from "react";
+import { useForm, Controller } from "react-hook-form";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 export default function AddSchoolPage() {
   const {
-    register,
     handleSubmit,
+    control,
+    register,
     formState: { errors },
   } = useForm();
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
-  const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedFileName, setSelectedFileName] = useState("");
   const router = useRouter();
-  const fileInputRef = useRef(null);
 
   const onSubmit = async (data) => {
     setLoading(true);
@@ -33,12 +33,16 @@ export default function AddSchoolPage() {
           process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET
         );
 
+        console.log("Uploading file to Cloudinary:", file.name);
+
         const uploadRes = await fetch(
           `https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`,
           { method: "POST", body: formData }
         );
 
         const uploadData = await uploadRes.json();
+        console.log("Cloudinary response:", uploadData);
+
         if (uploadData.secure_url) {
           imageUrl = uploadData.secure_url;
         } else {
@@ -73,15 +77,6 @@ export default function AddSchoolPage() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleFileChange = (e) => {
-    setSelectedFile(e.target.files[0]?.name || null);
-  };
-
-  const clearImage = () => {
-    if (fileInputRef.current) fileInputRef.current.value = "";
-    setSelectedFile(null);
   };
 
   return (
@@ -168,40 +163,30 @@ export default function AddSchoolPage() {
           )}
         </div>
 
-        {/* Image Upload */}
+        {/* Image Upload with Controller */}
         <div>
           <label className="block mb-1 font-semibold text-gray-800">
             School Image
           </label>
-          <div className="flex items-center gap-3">
-            <input
-              type="file"
-              accept="image/*"
-              {...register("image")}
-              ref={fileInputRef}
-              onChange={handleFileChange}
-              className="hidden"
-              id="imageUpload"
-            />
-            <label
-              htmlFor="imageUpload"
-              className="px-4 py-2 bg-gray-200 text-gray-800 rounded cursor-pointer hover:bg-gray-300"
-            >
-              Upload Image
-            </label>
-            {selectedFile && (
-              <span className="text-gray-700 text-sm">{selectedFile}</span>
+          <Controller
+            name="image"
+            control={control}
+            defaultValue={null}
+            render={({ field }) => (
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => {
+                  setSelectedFileName(e.target.files[0]?.name || "");
+                  field.onChange(e.target.files);
+                }}
+                className="w-full border p-2 rounded"
+              />
             )}
-            {selectedFile && (
-              <button
-                type="button"
-                onClick={clearImage}
-                className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
-              >
-                Clear
-              </button>
-            )}
-          </div>
+          />
+          {selectedFileName && (
+            <p className="text-gray-700 mt-1 text-sm">{selectedFileName}</p>
+          )}
         </div>
 
         {/* Submit Button */}
