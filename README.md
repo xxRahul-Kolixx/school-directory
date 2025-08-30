@@ -1,36 +1,55 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+# School Management Mini Project  
+The project is built using *Next.js (React framework)* and *MySQL*.  
 
-## Getting Started
+It contains:  
+1. A form to *add school details* into the database.  
+2. A page to *display all schools* in a card-style layout.  
+3. A custom *homepage* that provides smooth navigation to different sections of the project.  
 
-First, run the development server:
+---
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## 🚀 Features  
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- **Add School Page (addSchool.jsx)**  
+  - Responsive form built with react-hook-form.  
+  - Validations ( required fields).   
+  - Data stored in MySQL database under the schools table.  
 
-You can start editing the page by modifying `app/page.js`. The page auto-updates as you edit the file.
+- **Show Schools Page (showSchools.jsx)**  
+  - Displays schools in a *grid layout* similar to e-commerce listings.  
+  - Shows school *name, address, city, and image*.  
+  - Responsive design (works seamlessly on desktop and mobile).  
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Custom Homepage (index.jsx)**  
+  - Beautiful landing page with navigation to Add School and Show Schools pages.  
+  - Clean UI for easy access to all features.  
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🗄 Database  
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+*Table Name:* schools  
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Field      | Type            | Description                  |
+|------------|-----------------|------------------------------|
+| id         | INT (AUTO_INCREMENT) | Primary key               |
+| name       | TEXT            | Name of the school           |
+| address    | TEXT            | Address of the school        |
+| city       | TEXT            | City where the school is located |
+| state      | TEXT            | State name                   |
+| contact    | NUMBER          | Contact number of the school |
+| image      | TEXT            | Path of stored school image  |
+| email_id   | TEXT            | Email ID of the school       |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🛠 Tech Stack  
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- *Frontend:* Next.js (React)  
+- *Styling:* CSS / Tailwind CSS (if used)  
+- *Form Handling:* react-hook-form  
+- *Backend:* Node.js (API routes in Next.js)  
+- *Database:* MySQL  
+- *Hosting:* Vercel  
+
+---
