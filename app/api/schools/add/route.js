@@ -1,44 +1,29 @@
-// app/api/schools/add/route.js
-import db from "@/lib/db";
+import { getPool } from "@/lib/db";
 
-// API route handler for POST /api/schools/add
 export async function POST(req) {
   try {
     const body = await req.json();
-    const { name, address, city, state, contact, image, email_id } = body;
+    const pool = getPool();
 
-    // basic validation
-    if (!name || !address || !city || !email_id) {
-      return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
-    }
-
-    // insert into DB
-    const [result] = await db.execute(
-      `INSERT INTO schools (name, address, city, state, contact, image, email_id)
-       VALUES (?, ?, ?, ?, ?, ?, ?)`,
+    const [result] = await pool.query(
+      "INSERT INTO schools (name, address, city, state, contact, image, email_id) VALUES (?, ?, ?, ?, ?, ?, ?)",
       [
-        name,
-        address,
-        city,
-        state || null,
-        contact || null,
-        image || null,
-        email_id,
+        body.name,
+        body.address,
+        body.city,
+        body.state,
+        body.contact,
+        body.image,
+        body.email_id,
       ]
     );
 
     return new Response(
-      JSON.stringify({
-        message: "School added successfully",
-        id: result.insertId,
-      }),
-      { status: 201, headers: { "Content-Type": "application/json" } }
+      JSON.stringify({ success: true, id: result.insertId }),
+      {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }
     );
   } catch (error) {
     console.error("API Error:", error);
